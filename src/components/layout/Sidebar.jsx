@@ -1,13 +1,15 @@
+import { NavLink } from "react-router-dom";
+
 import {
   FaHome,
   FaProjectDiagram,
-  FaTasks,
   FaUsers,
+  FaTasks,
   FaUserTie,
   FaChartBar,
   FaBell,
   FaCog,
-  FaSignOutAlt
+  FaSignOutAlt,
 } from "react-icons/fa";
 
 import "../../styles/sidebar.css";
@@ -22,44 +24,60 @@ function Sidebar() {
 
       <ul>
 
-        <li className="active">
-          <FaHome />
-          Dashboard
+        <li>
+          <NavLink to="/admin/dashboard">
+            <FaHome />
+            <span>Dashboard</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaProjectDiagram />
-          Projects
+          <NavLink to="/admin/projects">
+            <FaProjectDiagram />
+            <span>Projects</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaTasks />
-          Tasks
+          <NavLink to="/admin/employees">
+            <FaUsers />
+            <span>Employees</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaUsers />
-          Employees
+          <NavLink to="/admin/tasks">
+            <FaTasks />
+            <span>Tasks</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaUserTie />
-          Team Leaders
+          <NavLink to="/admin/teamleaders">
+            <FaUserTie />
+            <span>Team Leaders</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaChartBar />
-          Reports
+          <NavLink to="/admin/reports">
+            <FaChartBar />
+            <span>Reports</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaBell />
-          Notifications
+          <NavLink to="/admin/notifications">
+            <FaBell />
+            <span>Notifications</span>
+          </NavLink>
         </li>
 
         <li>
-          <FaCog />
-          Settings
+          <NavLink to="/admin/settings">
+            <FaCog />
+            <span>Settings</span>
+          </NavLink>
         </li>
 
       </ul>

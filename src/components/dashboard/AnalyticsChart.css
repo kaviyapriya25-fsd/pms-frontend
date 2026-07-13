@@ -1,0 +1,25 @@
+.analytics-card{
+
+    background:white;
+
+    margin-top:30px;
+
+    padding:25px;
+
+    border-radius:18px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.analytics-card h3{
+
+    margin-bottom:20px;
+
+    color:#1e293b;
+
+    font-size:22px;
+
+    font-weight:700;
+
+}

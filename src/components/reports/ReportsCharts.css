@@ -1,0 +1,26 @@
+.reports-charts{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+    margin-top:35px;
+}
+
+.chart-card{
+    background:#fff;
+    border-radius:18px;
+    padding:25px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.chart-card h2{
+    margin-bottom:20px;
+    color:#1e293b;
+}
+
+@media(max-width:1000px){
+
+.reports-charts{
+    grid-template-columns:1fr;
+}
+
+}

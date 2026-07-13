@@ -1,0 +1,39 @@
+.employee-form-container{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+margin-bottom:25px;
+}
+
+.employee-form{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:18px;
+}
+
+.employee-form input,
+.employee-form select{
+padding:12px;
+border:1px solid #ddd;
+border-radius:8px;
+font-size:15px;
+}
+
+.form-buttons{
+display:flex;
+gap:10px;
+}
+
+.form-buttons button{
+padding:10px 22px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#2563eb;
+color:white;
+}
+
+.cancel-btn{
+background:#ef4444;
+}

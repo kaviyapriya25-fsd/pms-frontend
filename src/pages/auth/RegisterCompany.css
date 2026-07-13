@@ -1,0 +1,263 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+body{
+    background:#f4f7ff;
+}
+
+/* ================================= */
+
+.register-page{
+    width:100%;
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:42% 58%;
+}
+
+/* ================================= */
+
+.register-left{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:white;
+    padding:45px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.register-logo{
+    width:70px;
+    margin-bottom:25px;
+}
+
+.register-left h1{
+    font-size:42px;
+    font-weight:700;
+    text-align:center;
+    line-height:1.2;
+    margin-bottom:18px;
+}
+
+.register-left p{
+    width:90%;
+    text-align:center;
+    font-size:17px;
+    opacity:.9;
+    line-height:1.7;
+    margin-bottom:35px;
+}
+
+.register-image{
+    width:100%;
+    max-width:420px;
+}
+
+/* ================================= */
+
+.register-right{
+    background:#f8fbff;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:30px;
+    overflow-y:auto;
+}
+
+/* ================================= */
+
+.register-card{
+    width:100%;
+    max-width:760px;
+    background:white;
+    border-radius:20px;
+    padding:35px;
+    margin:20px 0;
+    box-shadow:0 20px 50px rgba(0,0,0,.08);
+}
+
+.back-login{
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.register-card h2{
+    font-size:34px;
+    color:#1e293b;
+}
+
+.register-card p{
+    color:#64748b;
+    margin:8px 0 25px;
+}
+
+/* ================================= */
+
+.register-card h3{
+    margin:22px 0 18px;
+    color:#1e293b;
+    font-size:18px;
+}
+
+/* ================================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+/* ================================= */
+
+.input-group{
+    position:relative;
+}
+
+.input-group input,
+.input-group select{
+    width:100%;
+    height:52px;
+    border:2px solid #e2e8f0;
+    border-radius:12px;
+    padding-left:45px;
+    padding-right:45px;
+    outline:none;
+    transition:.3s;
+    font-size:15px;
+    background:white;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+textarea:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.icon{
+    position:absolute;
+    top:50%;
+    left:16px;
+    transform:translateY(-50%);
+    color:#2563eb;
+}
+
+.password-icon{
+    position:absolute;
+    top:50%;
+    right:16px;
+    transform:translateY(-50%);
+    cursor:pointer;
+    color:#64748b;
+}
+
+/* ================================= */
+
+.address{
+    margin-top:18px;
+}
+
+.address textarea{
+    width:100%;
+    height:90px;
+    border:2px solid #e2e8f0;
+    border-radius:12px;
+    resize:none;
+    outline:none;
+    padding:16px 16px 16px 45px;
+    transition:.3s;
+    font-size:15px;
+}
+
+.address .icon{
+    top:24px;
+    transform:none;
+}
+
+/* ================================= */
+
+.register-button{
+    width:100%;
+    height:58px;
+    margin-top:35px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    font-size:17px;
+    font-weight:600;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.register-button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 30px rgba(37,99,235,.35);
+}
+/* ================================= */
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:20px;
+}
+
+/* ================================= */
+
+@media(max-width:1100px){
+
+.register-page{
+    grid-template-columns:1fr;
+}
+
+.register-left{
+    display:none;
+}
+
+.register-right{
+    padding:20px;
+}
+
+.register-card{
+    max-width:650px;
+}
+
+}
+
+@media(max-width:700px){
+
+.grid{
+    grid-template-columns:1fr;
+}
+
+.register-card{
+    padding:25px;
+}
+
+.register-card h2{
+    font-size:28px;
+}
+
+.register-button{
+    height:50px;
+}
+
+}
