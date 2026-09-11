@@ -1,43 +1,120 @@
 .statistics{
-
-display:grid;
-
-grid-template-columns:1fr 1fr;
-
-gap:25px;
-
-margin-top:30px;
-
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:30px;
 }
 
 .chart-card{
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
 
-background:white;
+.chart-card h3{
+    margin-bottom:20px;
+    font-size:30px;
+}
 
-padding:25px;
+/* ---------- Progress ---------- */
 
-border-radius:15px;
+.progress-box{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:260px;
+}
 
-box-shadow:0 5px 15px rgba(0,0,0,.08);
+.progress-icon{
+    font-size:55px;
+    color:#2563eb;
+    margin-bottom:10px;
+}
+
+.progress-box h1{
+    font-size:52px;
+    margin:5px 0;
+    color:#2563eb;
+}
+
+.progress-box p{
+    color:#666;
+    margin-bottom:20px;
+}
+
+.progress-bar{
+    width:90%;
+    height:14px;
+    background:#e5e7eb;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress-fill{
+    height:100%;
+    background:#22c55e;
+    border-radius:20px;
+}
+
+/* ---------- Tasks ---------- */
+
+.task-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-top:25px;
+}
+
+.task-box{
+    border-radius:12px;
+    color:white;
+    text-align:center;
+    padding:25px 10px;
+}
+
+.task-box svg{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.task-box h2{
+    font-size:34px;
+    margin:5px 0;
+}
+
+.task-box p{
+    font-size:16px;
+}
+
+.pending{
+    background:#f59e0b;
+}
+
+.progress{
+    background:#2563eb;
+}
+
+.completed{
+    background:#22c55e;
+}
+
+/* ---------- Responsive ---------- */
+
+@media(max-width:1000px){
+
+.statistics{
+
+grid-template-columns:1fr;
 
 }
 
-.chart-placeholder{
+.task-grid{
 
-height:250px;
+grid-template-columns:1fr;
 
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-font-size:25px;
-
-background:#f7f7f7;
-
-border-radius:10px;
-
-margin-top:15px;
+}
 
 }

@@ -1,33 +1,32 @@
+import { useEffect, useState } from "react";
+import { getProjects } from "../../services/projectService";
 import "../../styles/recentProjects.css";
 
-function RecentProjects() {
+function RecentProjects({ data }) {
 
-  const projects = [
+  const [projects, setProjects] = useState([]);
 
-    {
-      id:1,
-      name:"Project Management System",
-      leader:"Akka",
-      status:"Active"
-    },
-
-    {
-      id:2,
-      name:"Student Portal",
-      leader:"Priya",
-      status:"Completed"
-    },
-
-    {
-      id:3,
-      name:"Employee Tracker",
-      leader:"Arun",
-      status:"Pending"
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setProjects(data);
+    } else {
+      loadProjects();
     }
+  }, [data]);
 
-  ];
+  const loadProjects = async () => {
+    try {
+      const result = await getProjects();
+      if (Array.isArray(result)) {
+        setProjects(result.slice(-5).reverse());
+      }
+    } catch (err) {
+      console.error("RecentProjects Error:", err);
+      setProjects([]);
+    }
+  };
 
-  return(
+  return (
 
     <div className="recent-projects">
 
@@ -53,25 +52,41 @@ function RecentProjects() {
 
         <tbody>
 
-        {
+          {projects && projects.length > 0 ? (
 
-          projects.map(project=>(
+            projects.map(project => (
 
-            <tr key={project.id}>
+              <tr key={project.id}>
 
-              <td>{project.id}</td>
+                <td>{project.id}</td>
 
-              <td>{project.name}</td>
+                <td>{project.projectName}</td>
 
-              <td>{project.leader}</td>
+                <td>{project.leader || "Unassigned"}</td>
 
-              <td>{project.status}</td>
+                <td>
+                  <span className={(project.status || "active").toLowerCase()}>
+                    {project.status}
+                  </span>
+                </td>
+
+              </tr>
+
+            ))
+
+          ) : (
+
+            <tr>
+
+              <td colSpan="4" style={{ textAlign: "center" }}>
+
+                No Projects Available
+
+              </td>
 
             </tr>
 
-          ))
-
-        }
+          )}
 
         </tbody>
 

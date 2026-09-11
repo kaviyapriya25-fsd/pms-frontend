@@ -1,48 +1,74 @@
+import { useEffect, useState } from "react";
+import { getProjects } from "../../services/projectService";
 import "../../styles/recentActivity.css";
 
-function RecentActivity(){
+function RecentActivity({ data }) {
 
-const activity=[
+  const [activities, setActivities] = useState([]);
 
-"New Project Created",
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setActivities(data);
+    } else {
+      loadActivity();
+    }
+  }, [data]);
 
-"Employee Added",
+  const loadActivity = async () => {
 
-"Task Completed",
+    try {
 
-"Project Updated",
+      const projects = await getProjects();
+      if (Array.isArray(projects)) {
+        const latest = projects
+          .slice(-5)
+          .reverse()
+          .map(project => ({
+            id: project.id,
+            text: `Project "${project.projectName}" created`
+          }));
 
-"Leader Assigned"
+        setActivities(latest);
+      }
 
-];
+    } catch (err) {
+      console.error("RecentActivity Error:", err);
+      setActivities([]);
+    }
 
-return(
+  };
 
-<div className="recent-activity">
+  return (
 
-<h3>Recent Activity</h3>
+    <div className="recent-activity">
 
-<ul>
+      <h3>Recent Activity</h3>
 
-{
+      <ul>
 
-activity.map((item,index)=>(
+        {activities && activities.length > 0 ? (
 
-<li key={index}>
+          activities.map((activity, index) => (
 
-{item}
+            <li key={activity.id || index}>
 
-</li>
+              {activity.text}
 
-))
+            </li>
 
-}
+          ))
 
-</ul>
+        ) : (
 
-</div>
+          <li>No Recent Activity</li>
 
-);
+        )}
+
+      </ul>
+
+    </div>
+
+  );
 
 }
 

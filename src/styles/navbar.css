@@ -1,93 +1,54 @@
 .navbar{
-
-height:80px;
-
-background:white;
-
-display:flex;
-
-align-items:center;
-
-justify-content:space-between;
-
-padding:0 35px;
-
-box-shadow:0 3px 12px rgba(0,0,0,.08);
-
+    height:80px;
+    background:#fff;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
 .title{
-
-font-size:34px;
-
-font-weight:bold;
-
-color:#1e293b;
-
+    font-size:36px;
+    font-weight:700;
+    color:#1e293b;
+    white-space:nowrap;
 }
 
 .search{
-
-width:450px;
-
-height:48px;
-
-background:#eef2ff;
-
-display:flex;
-
-align-items:center;
-
-padding:0 18px;
-
-border-radius:10px;
-
-gap:12px;
-
+    width:430px;
+    height:48px;
+    background:#eef2ff;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    padding:0 15px;
+    gap:10px;
 }
 
 .search input{
-
-border:none;
-
-background:transparent;
-
-width:100%;
-
-font-size:18px;
-
-outline:none;
-
+    width:100%;
+    border:none;
+    background:transparent;
+    outline:none;
+    font-size:17px;
 }
 
 .nav-right{
-
-display:flex;
-
-align-items:center;
-
-gap:30px;
-
+    display:flex;
+    align-items:center;
+    gap:20px;
 }
 
 .icon{
-
-font-size:24px;
-
-cursor:pointer;
-
+    font-size:22px;
+    cursor:pointer;
 }
 
 .profile{
-
-display:flex;
-
-align-items:center;
-
-gap:10px;
-
-font-size:22px;
-
-font-weight:bold;
-
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:20px;
+    font-weight:600;
 }

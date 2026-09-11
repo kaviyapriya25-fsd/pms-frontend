@@ -1,50 +1,51 @@
 import {
-FaBell,
-FaSearch,
-FaUserCircle
+  FaSearch,
+  FaUserCircle,
 } from "react-icons/fa";
+import NotificationBell from "../notifications/NotificationBell";
 
 import "../../styles/navbar.css";
 
-function Navbar(){
+function Navbar() {
 
-return(
+  const name = localStorage.getItem("name") || "Admin";
 
-<div className="navbar">
+  return (
 
-<div className="title">
+    <div className="navbar">
 
-Project Management System
+      <div className="title">
+        Project Management System
+      </div>
 
-</div>
+      <div className="search">
 
-<div className="search">
+        <FaSearch />
 
-<FaSearch/>
+        <input
+          type="text"
+          placeholder="Search..."
+        />
 
-<input
-placeholder="Search..."
-/>
+      </div>
 
-</div>
+      <div className="nav-right" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
 
-<div className="nav-right">
+        <NotificationBell />
 
-<FaBell className="icon"/>
+        <div className="profile">
 
-<div className="profile">
+          <FaUserCircle />
 
-<FaUserCircle/>
+          <span>{name}</span>
 
-<span>Admin</span>
+        </div>
 
-</div>
+      </div>
 
-</div>
+    </div>
 
-</div>
-
-);
+  );
 
 }
 

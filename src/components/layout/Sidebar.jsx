@@ -1,11 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import {
   FaHome,
   FaProjectDiagram,
   FaUsers,
-  FaTasks,
   FaUserTie,
+  FaTasks,
   FaChartBar,
   FaBell,
   FaCog,
@@ -15,7 +15,24 @@ import {
 import "../../styles/sidebar.css";
 
 function Sidebar() {
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    const confirmLogout = window.confirm("Do you want to Logout?");
+
+    if (!confirmLogout) return;
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    navigate("/", { replace: true });
+
+  };
+
   return (
+
     <div className="sidebar">
 
       <div className="logo">
@@ -46,16 +63,16 @@ function Sidebar() {
         </li>
 
         <li>
-          <NavLink to="/admin/tasks">
-            <FaTasks />
-            <span>Tasks</span>
+          <NavLink to="/admin/teamleaders">
+            <FaUserTie />
+            <span>Team Leaders</span>
           </NavLink>
         </li>
 
         <li>
-          <NavLink to="/admin/teamleaders">
-            <FaUserTie />
-            <span>Team Leaders</span>
+          <NavLink to="/admin/tasks">
+            <FaTasks />
+            <span>Tasks</span>
           </NavLink>
         </li>
 
@@ -82,13 +99,18 @@ function Sidebar() {
 
       </ul>
 
-      <button className="logout-btn">
+      <button
+        className="logout-btn"
+        onClick={handleLogout}
+      >
         <FaSignOutAlt />
         Logout
       </button>
 
     </div>
+
   );
+
 }
 
 export default Sidebar;
