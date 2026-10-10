@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { login } from "../../services/loginService";
-import GoogleAuthModal from "../../components/common/GoogleAuthModal";
+import { triggerGoogleLogin } from "../../services/googleAuthService";
 import "./Login.css";
 
 import logo from "../../assets/logo/logo.png";
@@ -28,7 +28,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -71,7 +70,11 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    setIsGoogleModalOpen(true);
+    triggerGoogleLogin(
+      "ADMIN",
+      (res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" ? "/leader/dashboard" : "/employee/dashboard"),
+      (errMsg) => setError(errMsg)
+    );
   };
 
   return (
@@ -179,12 +182,6 @@ function Login() {
 
       </div>
 
-      <GoogleAuthModal
-        isOpen={isGoogleModalOpen}
-        onClose={() => setIsGoogleModalOpen(false)}
-        role="ADMIN"
-        onSuccess={(res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" ? "/leader/dashboard" : "/employee/dashboard")}
-      />
     </div>
   );
 }

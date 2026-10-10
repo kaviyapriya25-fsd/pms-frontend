@@ -7,7 +7,8 @@ import TaskDetailModal from "../../components/agile/TaskDetailModal";
 import { getTasks, addTask, updateTask, deleteTask } from "../../services/taskService";
 import { getEmployees } from "../../services/employeeService";
 import { getTeamLeaders } from "../../services/teamLeaderService";
-import { FaPlus, FaTasks, FaEdit, FaTrash, FaCheckCircle, FaSpinner, FaClipboardList, FaThLarge, FaTable } from "react-icons/fa";
+import { getProjects } from "../../services/projectService";
+import { FaPlus, FaTasks, FaEdit, FaTrash, FaCheckCircle, FaSpinner, FaClipboardList, FaThLarge, FaTable, FaProjectDiagram } from "react-icons/fa";
 
 function AssignTasks() {
   const leaderEmail = localStorage.getItem("email") || "";
@@ -16,6 +17,7 @@ function AssignTasks() {
   const [tasks, setTasks] = useState([]);
   const [teamEmployees, setTeamEmployees] = useState([]);
   const [assignedProject, setAssignedProject] = useState("");
+  const [myProjects, setMyProjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [activeTaskModal, setActiveTaskModal] = useState(null);
@@ -24,6 +26,7 @@ function AssignTasks() {
   const [form, setForm] = useState({
     taskName: "",
     description: "",
+    project: "",
     employee: "",
     priority: "MEDIUM",
     status: "TODO",
@@ -37,24 +40,49 @@ function AssignTasks() {
 
   const loadLeaderData = async () => {
     try {
-      // 1. Fetch team leader's project
-      const leaders = await getTeamLeaders();
-      const me = leaders.find((l) => l.email === leaderEmail || l.name === leaderName);
-      if (me && me.project) {
-        setAssignedProject(me.project);
-      }
+      // 1. Fetch team leader & all company projects
+      const [leaders, allProjects, allEmployees, allTasks] = await Promise.all([
+        getTeamLeaders(),
+        getProjects(),
+        getEmployees(),
+        getTasks(),
+      ]);
+
+      const me = leaders.find((l) => 
+        (leaderEmail && l.email?.toLowerCase() === leaderEmail.toLowerCase()) || 
+        (leaderName && l.name?.toLowerCase() === leaderName.toLowerCase())
+      );
+
+      // Find all projects where this leader is assigned
+      const assignedProjList = allProjects.filter((p) => {
+        const matchesLeaderName = p.leader && leaderName && p.leader.toLowerCase() === leaderName.toLowerCase();
+        const matchesLeaderEmail = p.leader && leaderEmail && p.leader.toLowerCase() === leaderEmail.toLowerCase();
+        const matchesLeaderProject = me && me.project && p.projectName && p.projectName.toLowerCase() === me.project.toLowerCase();
+        return matchesLeaderName || matchesLeaderEmail || matchesLeaderProject;
+      });
+
+      setMyProjects(assignedProjList);
+
+      const defaultProject = assignedProjList.length > 0 
+        ? assignedProjList[0].projectName 
+        : (me && me.project ? me.project : "");
+      setAssignedProject(defaultProject);
 
       // 2. Fetch employees under this team leader
-      const allEmployees = await getEmployees();
       const myTeam = allEmployees.filter(
-        (e) => e.teamLeader === leaderName || e.teamLeader === leaderEmail
+        (e) => (leaderName && e.teamLeader && e.teamLeader.toLowerCase() === leaderName.toLowerCase()) ||
+               (leaderEmail && e.teamLeader && e.teamLeader.toLowerCase() === leaderEmail.toLowerCase())
       );
       setTeamEmployees(myTeam);
 
-      // 3. Fetch tasks created by / assigned to this team leader
-      const allTasks = await getTasks();
+      // 3. Fetch tasks for all projects assigned to this leader
+      const myProjectNames = new Set(assignedProjList.map((p) => p.projectName?.toLowerCase()));
+      if (me && me.project) myProjectNames.add(me.project.toLowerCase());
+
       const leaderTasks = allTasks.filter(
-        (t) => t.teamLeader === leaderName || t.teamLeader === leaderEmail || (me && me.project && t.project === me.project)
+        (t) => (leaderName && t.teamLeader?.toLowerCase() === leaderName.toLowerCase()) || 
+               (leaderEmail && t.teamLeader?.toLowerCase() === leaderEmail.toLowerCase()) || 
+               (t.project && myProjectNames.has(t.project.toLowerCase()))
       );
       setTasks(leaderTasks);
 
@@ -69,6 +97,7 @@ function AssignTasks() {
     setForm({
       taskName: "",
       description: "",
+      project: myProjects.length > 0 ? myProjects[0].projectName : assignedProject,
       employee: teamEmployees.length > 0 ? teamEmployees[0].name : "",
       priority: "MEDIUM",
       status: "TODO",
@@ -83,6 +112,7 @@ function AssignTasks() {
     setForm({
       taskName: task.taskName || "",
       description: task.description || "",
+      project: task.project || assignedProject,
       employee: task.employee || "",
       priority: task.priority || "MEDIUM",
       status: task.status || "TODO",
@@ -104,9 +134,16 @@ function AssignTasks() {
       return;
     }
 
+    if (form.startDate && form.dueDate && form.dueDate < form.startDate) {
+      toast.error("Task Due Date cannot be before Start Date.");
+      return;
+    }
+
+    const targetProject = form.project || assignedProject || (myProjects.length > 0 ? myProjects[0].projectName : "General");
+
     const payload = {
       ...form,
-      project: assignedProject || "General",
+      project: targetProject,
       teamLeader: leaderName,
     };
 
@@ -163,7 +200,16 @@ function AssignTasks() {
               Create & Assign Tasks
             </h1>
             <p style={{ color: "#64748b", margin: "4px 0 0 0" }}>
-              Project: <strong>{assignedProject || "No Project Assigned Yet"}</strong>
+              {myProjects.length > 1 ? (
+                <>
+                  Assigned Projects ({myProjects.length}):{" "}
+                  <strong>{myProjects.map((p) => p.projectName).join(" • ")}</strong>
+                </>
+              ) : (
+                <>
+                  Project: <strong>{assignedProject || "No Project Assigned Yet"}</strong>
+                </>
+              )}
             </p>
           </div>
 
@@ -261,6 +307,28 @@ function AssignTasks() {
               </div>
 
               <div>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>Project *</label>
+                <select
+                  value={form.project}
+                  onChange={(e) => setForm({ ...form, project: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "6px" }}
+                  required
+                >
+                  {myProjects.length > 0 ? (
+                    myProjects.map((p) => (
+                      <option key={p.id} value={p.projectName}>
+                        {p.projectName}
+                      </option>
+                    ))
+                  ) : (
+                    <option value={assignedProject || "General"}>
+                      {assignedProject || "General"}
+                    </option>
+                  )}
+                </select>
+              </div>
+
+              <div>
                 <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>Assign to Team Member *</label>
                 <select
                   value={form.employee}
@@ -299,7 +367,14 @@ function AssignTasks() {
                 <input
                   type="date"
                   value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  onChange={(e) => {
+                    const newStart = e.target.value;
+                    setForm((prev) => ({
+                      ...prev,
+                      startDate: newStart,
+                      dueDate: prev.dueDate && prev.dueDate < newStart ? "" : prev.dueDate,
+                    }));
+                  }}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "6px" }}
                 />
               </div>
@@ -308,6 +383,7 @@ function AssignTasks() {
                 <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>Due Date</label>
                 <input
                   type="date"
+                  min={form.startDate || undefined}
                   value={form.dueDate}
                   onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "6px" }}

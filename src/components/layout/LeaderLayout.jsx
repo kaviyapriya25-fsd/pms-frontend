@@ -7,6 +7,7 @@ import {
   FaSignOutAlt,
   FaUserTie,
   FaBell,
+  FaHome,
 } from "react-icons/fa";
 import NotificationBell from "../notifications/NotificationBell";
 
@@ -100,9 +101,30 @@ function LeaderLayout({ children }) {
 
         {/* Top Header Navbar */}
         <div style={{ height: "64px", background: "#ffffff", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
-            Team Leader Management Portal
-          </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+              Team Leader Management Portal
+            </h2>
+            <Link
+              to="/"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 14px",
+                background: "rgba(99,102,241,0.1)",
+                color: "#4f46e5",
+                border: "1px solid rgba(99,102,241,0.3)",
+                borderRadius: "8px",
+                textDecoration: "none",
+                fontSize: "13px",
+                fontWeight: "600",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <FaHome /> Go to Home
+            </Link>
+          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <NotificationBell />

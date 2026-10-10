@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { sendOtp, resendOtp, resetPassword } from "../../services/authService";
+import OtpInput from "../../components/common/OtpInput";
 import {
   FaEnvelope,
   FaKey,
@@ -69,7 +70,7 @@ function ForgotPassword() {
 
     try {
       await sendOtp(email, roleParam);
-      toast.success("OTP verification code sent to your real email address!");
+      toast.success("OTP verification code sent! Valid strictly for 2 minutes.");
       setStep(2);
       setTimer(120);
     } catch (err) {
@@ -91,7 +92,7 @@ function ForgotPassword() {
 
     try {
       await resendOtp(email, roleParam);
-      toast.success("Fresh OTP code sent to your real email address!");
+      toast.success("Fresh OTP code sent! Valid strictly for 2 minutes.");
       setTimer(120);
     } catch (err) {
       console.error(err);
@@ -104,8 +105,13 @@ function ForgotPassword() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
-    if (!otp.trim() || otp.length < 4) {
-      setError("Please enter the 6-digit OTP code.");
+    if (timer === 0) {
+      setError("OTP has expired (strictly valid for 2 minutes). Please click Resend OTP to receive a new code.");
+      return;
+    }
+
+    if (!otp.trim() || otp.trim().length !== 6) {
+      setError("Please enter the complete 6-digit OTP code.");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -160,8 +166,8 @@ function ForgotPassword() {
 
         {/* Right Form */}
         <div className="forgot-right">
-          <Link to={loginPath} style={{ color: "#4f46e5", textDecoration: "none", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px" }}>
-            <FaArrowLeft /> Back to Login
+          <Link to="/" style={{ color: "#4f46e5", textDecoration: "none", fontWeight: "600", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px" }}>
+            <FaArrowLeft /> Go to Home
           </Link>
 
           <span className="forgot-badge">Step {step} of 3</span>
@@ -199,7 +205,72 @@ function ForgotPassword() {
           {step === 2 && (
             <>
               <h2>Verify OTP & New Password 🔑</h2>
-              <p>Enter the OTP code sent to <strong>{email}</strong> along with your new password.</p>
+              <p>
+                Enter the OTP code sent to <strong>{email}</strong> along with your new password.{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep(1);
+                    setError("");
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#4f46e5",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    padding: "0 4px",
+                  }}
+                >
+                  (Wrong email? Change)
+                </button>
+              </p>
+
+              {/* 2-Minute Expiry Countdown Banner */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  background: timer > 0 ? "#eff6ff" : "#fef2f2",
+                  border: timer > 0 ? "1px solid #bfdbfe" : "1px solid #fecaca",
+                  color: timer > 0 ? "#1e40af" : "#991b1b",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                }}
+              >
+                <span>
+                  {timer > 0 ? (
+                    <>⏱️ OTP Validity: <strong>{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, "0")}</strong> remaining (Valid for 2 minutes)</>
+                  ) : (
+                    <>⚠️ OTP Expired! The 2-minute verification window has passed.</>
+                  )}
+                </span>
+                {timer === 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    style={{
+                      background: "#dc2626",
+                      color: "#fff",
+                      border: "none",
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Resend Code
+                  </button>
+                )}
+              </div>
 
               {error && (
                 <div style={{ background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", marginBottom: "18px" }}>
@@ -208,14 +279,20 @@ function ForgotPassword() {
               )}
 
               <form onSubmit={handleResetPassword}>
-                <div className="input-field-group">
-                  <FaKey className="field-icon" />
-                  <input
-                    type="text"
-                    placeholder="6-Digit OTP Code"
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: "700", color: "#334155", marginBottom: "8px" }}>
+                    6-Digit OTP Verification Code *
+                  </label>
+                  <OtpInput
+                    length={6}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
+                    onChange={(val) => {
+                      setOtp(val);
+                      if (error) setError("");
+                    }}
+                    disabled={loading || timer === 0}
+                    hasError={timer === 0 || (!!error && otp.length < 6)}
+                    autoFocus={true}
                   />
                 </div>
 
@@ -244,21 +321,57 @@ function ForgotPassword() {
                   />
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", fontSize: "12px", color: "#64748b" }}>
-                  <span>Resend OTP code in: <strong>{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</strong></span>
-                  {timer === 0 && (
-                    <button
-                      type="button"
-                      onClick={handleResendOtp}
-                      style={{ background: "none", border: "none", color: "#4f46e5", fontWeight: "700", cursor: "pointer" }}
-                    >
-                      Resend OTP
-                    </button>
-                  )}
+                {/* Resend OTP Prominent Action Box */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "10px 14px",
+                    marginBottom: "18px",
+                    fontSize: "13px",
+                  }}
+                >
+                  <div>
+                    <span style={{ color: "#64748b" }}>Didn't receive code? </span>
+                    {timer > 0 ? (
+                      <span style={{ color: "#4f46e5", fontWeight: "700" }}>
+                        Resend in {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, "0")}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#dc2626", fontWeight: "700" }}>
+                        OTP Expired — Ready to resend!
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={timer > 0 || loading}
+                    style={{
+                      background: timer === 0 && !loading ? "#4f46e5" : "#e2e8f0",
+                      color: timer === 0 && !loading ? "#ffffff" : "#94a3b8",
+                      border: "none",
+                      padding: "6px 14px",
+                      borderRadius: "6px",
+                      fontWeight: "700",
+                      fontSize: "12px",
+                      cursor: timer === 0 && !loading ? "pointer" : "not-allowed",
+                      transition: "all 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    {loading ? "Sending..." : "🔄 Resend OTP"}
+                  </button>
                 </div>
 
-                <button type="submit" className="forgot-btn" disabled={loading}>
-                  {loading ? "Updating Password..." : "Reset Password & Login"} <FaArrowRight />
+                <button type="submit" className="forgot-btn" disabled={loading || timer === 0}>
+                  {loading ? "Updating Password..." : timer === 0 ? "OTP Expired - Please Resend" : "Reset Password & Login"} <FaArrowRight />
                 </button>
               </form>
             </>

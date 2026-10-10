@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import "../../styles/projectform.css";
 import { getTeamLeaders } from "../../services/teamLeaderService";
-
-
+                          
+                     
 function ProjectForm({ onSave, selectedProject, onCancel }) {
   const initialState = {
     projectName: "",
@@ -17,11 +17,11 @@ function ProjectForm({ onSave, selectedProject, onCancel }) {
   const [project, setProject] = useState(initialState);
   const [leaders, setLeaders] = useState([]);
   const [error, setError] = useState("");
-
+                                            
   useEffect(() => {
     loadLeaders();
   }, []);
-
+                                      
   useEffect(() => {
     if (selectedProject) {
       setProject({
@@ -44,10 +44,34 @@ function ProjectForm({ onSave, selectedProject, onCancel }) {
   };
 
   const handleChange = (e) => {
-    setProject({
-      ...project,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === "startDate") {
+      setProject((prev) => ({
+        ...prev,
+        startDate: value,
+        endDate: prev.endDate && prev.endDate < value ? "" : prev.endDate,
+      }));
+      if (project.endDate && project.endDate < value) {
+        setError("Target End Date cannot be before Start Date.");
+      } else {
+        setError("");
+      }
+      return;
+    }
+
+    if (name === "endDate") {
+      if (project.startDate && value && value < project.startDate) {
+        setError("Target End Date cannot be before Start Date.");
+      } else {
+        setError("");
+      }
+    }
+
+    setProject((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -63,6 +87,10 @@ function ProjectForm({ onSave, selectedProject, onCancel }) {
     }
     if (!project.endDate) {
       setError("Target End Date is required.");
+      return;
+    }
+    if (project.startDate && project.endDate && project.endDate < project.startDate) {
+      setError("Target End Date cannot be before Start Date.");
       return;
     }
 
@@ -158,6 +186,7 @@ function ProjectForm({ onSave, selectedProject, onCancel }) {
           <input
             type="date"
             name="endDate"
+            min={project.startDate || undefined}
             value={project.endDate || ""}
             onChange={handleChange}
             required

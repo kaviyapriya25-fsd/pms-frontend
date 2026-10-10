@@ -154,22 +154,7 @@ function Dashboard() {
               Project: <strong style={{ color: "#ffffff" }}>{inheritedProject}</strong> • Team Leader: <strong style={{ color: "#ffffff" }}>{teamLeaderName}</strong>
             </p>
           </div>
-
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {/* Notification Bell */}
-            <button
-              onClick={() => setShowNotificationsModal(true)}
-              style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", width: "44px", height: "44px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", fontSize: "18px" }}
-              title="Notifications"
-            >
-              <FaBell />
-              {notifications.length > 0 && (
-                <span style={{ position: "absolute", top: "6px", right: "6px", background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800", width: "18px", height: "18px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-
             {/* Profile Button */}
             <button
               onClick={() => setShowProfileModal(true)}
@@ -186,6 +171,7 @@ function Dashboard() {
               <FaTasks /> Kanban Board
             </button>
           </div>
+
         </div>
 
         {/* Feature 1: My Inherited Project Banner Card */}

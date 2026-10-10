@@ -95,6 +95,15 @@ function TaskForm({ onSave, selectedTask, onCancel }) {
             return;
         }
 
+        if (name === "startDate") {
+            setTask((prev) => ({
+                ...prev,
+                startDate: value,
+                dueDate: prev.dueDate && prev.dueDate < value ? "" : prev.dueDate,
+            }));
+            return;
+        }
+
         setTask((prev) => ({
             ...prev,
             [name]: value,
@@ -103,6 +112,10 @@ function TaskForm({ onSave, selectedTask, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (task.startDate && task.dueDate && task.dueDate < task.startDate) {
+            alert("Task Due Date cannot be before Start Date.");
+            return;
+        }
         onSave(task);
         if (!selectedTask) {
             setTask(initialState);
@@ -231,6 +244,7 @@ function TaskForm({ onSave, selectedTask, onCancel }) {
                     <input
                         type="date"
                         name="dueDate"
+                        min={task.startDate || undefined}
                         value={task.dueDate || ""}
                         onChange={handleChange}
                     />

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaUsers } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import api from "../../services/api";
-import GoogleAuthModal from "../../components/common/GoogleAuthModal";
+import { triggerGoogleLogin } from "../../services/googleAuthService";
 import "./EmployeeLogin.css";
 
 import employeeImg from "../../assets/images/employees.svg";
@@ -19,7 +19,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -61,7 +60,11 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    setIsGoogleModalOpen(true);
+    triggerGoogleLogin(
+      "EMPLOYEE",
+      (res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" || res.role === "LEADER" ? "/leader/dashboard" : "/employee/dashboard"),
+      (errMsg) => setError(errMsg)
+    );
   };
 
   return (
@@ -171,12 +174,6 @@ function Login() {
 
       </div>
 
-      <GoogleAuthModal
-        isOpen={isGoogleModalOpen}
-        onClose={() => setIsGoogleModalOpen(false)}
-        role="EMPLOYEE"
-        onSuccess={(res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" || res.role === "LEADER" ? "/leader/dashboard" : "/employee/dashboard")}
-      />
     </div>
   );
 }

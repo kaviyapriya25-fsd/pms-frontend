@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { registerCompany, sendRegistrationOtp, verifyRegistrationOtp } from "../../services/authService";
+import OtpInput from "../../components/common/OtpInput";
 import {
   FaBuilding,
   FaEnvelope,
@@ -39,6 +40,7 @@ function RegisterCompany() {
   const [otpCode, setOtpCode] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -54,15 +56,28 @@ function RegisterCompany() {
     confirmPassword: "",
   });
 
+  useEffect(() => {
+    let interval = null;
+    if (otpSent && !isEmailVerified && otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [otpSent, isEmailVerified, otpTimer]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    if (e.target.name === "adminEmail" && isEmailVerified) {
+    if (e.target.name === "adminEmail") {
       setIsEmailVerified(false);
       setOtpSent(false);
       setOtpCode("");
+      setOtpTimer(0);
     }
   };
 
@@ -77,7 +92,8 @@ function RegisterCompany() {
     try {
       await sendRegistrationOtp(formData.adminEmail);
       setOtpSent(true);
-      toast.success(`OTP Verification Code sent to ${formData.adminEmail}! Check your inbox.`);
+      setOtpTimer(120); // 2 minutes strictly
+      toast.success(`OTP Verification Code sent to ${formData.adminEmail}! Valid strictly for 2 minutes.`);
     } catch (err) {
       console.error(err);
       const msg = err.response?.data?.message || err.response?.data || err.message || "Failed to send OTP";
@@ -89,6 +105,11 @@ function RegisterCompany() {
   };
 
   const handleVerifyOtp = async () => {
+    if (otpTimer === 0) {
+      setError("OTP has expired (strictly valid for 2 minutes). Please click Resend OTP.");
+      toast.error("OTP has expired (2 minutes limit). Please click Resend OTP.");
+      return;
+    }
     if (!otpCode || otpCode.trim().length !== 6) {
       toast.error("Please enter the 6-digit OTP code.");
       return;
@@ -364,13 +385,22 @@ function RegisterCompany() {
                       <button
                         type="button"
                         onClick={handleSendOtp}
-                        disabled={sendingOtp || !formData.adminEmail}
+                        disabled={sendingOtp || !formData.adminEmail || (otpSent && otpTimer > 0)}
                         style={{
-                          background: "#4f46e5", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "6px",
-                          fontSize: "11px", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px"
+                          background: otpSent && otpTimer > 0 ? "#94a3b8" : "#4f46e5",
+                          color: "#fff",
+                          border: "none",
+                          padding: "4px 10px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          cursor: otpSent && otpTimer > 0 ? "not-allowed" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px"
                         }}
                       >
-                        <FaPaperPlane /> {sendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                        <FaPaperPlane /> {sendingOtp ? "Sending..." : otpSent ? (otpTimer > 0 ? `Resend (${Math.floor(otpTimer / 60)}:${(otpTimer % 60).toString().padStart(2, "0")})` : "Resend OTP") : "Send OTP"}
                       </button>
                     )}
                   </div>
@@ -389,34 +419,86 @@ function RegisterCompany() {
                 </div>
 
                 {otpSent && !isEmailVerified && (
-                  <div className="field-box full-width" style={{ marginTop: "10px", background: "#f0f9ff", padding: "14px", borderRadius: "10px", border: "1px solid #bae6fd" }}>
-                    <label style={{ color: "#0369a1", fontWeight: "700" }}>Enter 6-Digit Email Verification OTP *</label>
-                    <div style={{ display: "flex", gap: "10px", marginTop: "6px" }}>
-                      <div className="input-with-icon" style={{ flex: 1 }}>
-                        <FaKey className="f-icon" />
-                        <input
-                          type="text"
-                          placeholder="e.g. 123456"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          maxLength={6}
-                        />
-                      </div>
+                  <div className="field-box full-width" style={{ marginTop: "10px", background: otpTimer > 0 ? "#f0f9ff" : "#fef2f2", padding: "14px", borderRadius: "10px", border: otpTimer > 0 ? "1px solid #bae6fd" : "1px solid #fecaca" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <label style={{ color: otpTimer > 0 ? "#0369a1" : "#991b1b", fontWeight: "700", margin: 0 }}>
+                        Enter 6-Digit Email Verification OTP *
+                      </label>
+                      {otpTimer > 0 ? (
+                        <span style={{ fontSize: "12px", color: "#0284c7", fontWeight: "700", background: "#e0f2fe", padding: "3px 10px", borderRadius: "12px" }}>
+                          ⏱️ Expires in {Math.floor(otpTimer / 60)}:{(otpTimer % 60).toString().padStart(2, "0")} (2 min limit)
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "12px", color: "#dc2626", fontWeight: "700", background: "#fee2e2", padding: "3px 10px", borderRadius: "12px" }}>
+                          ⚠️ OTP Expired
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ margin: "12px 0 8px 0" }}>
+                      <OtpInput
+                        length={6}
+                        value={otpCode}
+                        onChange={(val) => {
+                          setOtpCode(val);
+                          if (error) setError("");
+                        }}
+                        disabled={verifyingOtp || otpTimer === 0}
+                        hasError={otpTimer === 0}
+                        autoFocus={true}
+                      />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
                       <button
                         type="button"
                         onClick={handleVerifyOtp}
-                        disabled={verifyingOtp}
+                        disabled={verifyingOtp || otpTimer === 0 || otpCode.trim().length !== 6}
                         style={{
-                          background: "#16a34a", color: "#ffffff", border: "none", padding: "0 18px", borderRadius: "8px",
-                          fontWeight: "700", fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px"
+                          background: (otpTimer === 0 || otpCode.trim().length !== 6) ? "#94a3b8" : "#16a34a",
+                          color: "#ffffff",
+                          border: "none",
+                          padding: "10px 22px",
+                          borderRadius: "8px",
+                          fontWeight: "700",
+                          fontSize: "13px",
+                          cursor: (otpTimer === 0 || otpCode.trim().length !== 6) ? "not-allowed" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          boxShadow: (otpTimer === 0 || otpCode.trim().length !== 6) ? "none" : "0 4px 12px rgba(22, 163, 74, 0.25)",
+                          transition: "all 0.2s"
                         }}
                       >
-                        <FaCheckCircle /> {verifyingOtp ? "Verifying..." : "Verify OTP"}
+                        <FaCheckCircle /> {verifyingOtp ? "Verifying..." : "Verify OTP Code"}
                       </button>
                     </div>
-                    <span style={{ fontSize: "12px", color: "#64748b", marginTop: "6px", display: "block" }}>
-                      Check your Gmail inbox for the 6-digit verification code sent to <strong>{formData.adminEmail}</strong>.
-                    </span>
+                    {otpTimer === 0 ? (
+                      <div style={{ marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fee2e2", padding: "8px 12px", borderRadius: "6px" }}>
+                        <span style={{ fontSize: "12px", color: "#991b1b", fontWeight: "600" }}>
+                          OTP has expired after 2 minutes. Click resend to receive a fresh OTP.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={sendingOtp}
+                          style={{
+                            background: "#dc2626",
+                            color: "#fff",
+                            border: "none",
+                            padding: "4px 10px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            fontWeight: "700",
+                            cursor: "pointer"
+                          }}
+                        >
+                          🔄 Resend OTP
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#64748b", marginTop: "6px", display: "block" }}>
+                        Check your Gmail inbox for the 6-digit verification code sent to <strong>{formData.adminEmail}</strong>. Code is strictly valid for 2 minutes.
+                      </span>
+                    )}
                   </div>
                 )}
 

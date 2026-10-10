@@ -24,6 +24,54 @@ import {
 } from "react-icons/fa";
 import "./project.css";
 
+// Auto-generates a colorful gradient logo from project name initials
+const PROJECT_GRADIENTS = [
+  ["#6366f1", "#8b5cf6"],
+  ["#0ea5e9", "#06b6d4"],
+  ["#f59e0b", "#ef4444"],
+  ["#10b981", "#059669"],
+  ["#ec4899", "#f43f5e"],
+  ["#f97316", "#fb923c"],
+  ["#8b5cf6", "#a78bfa"],
+  ["#14b8a6", "#0d9488"],
+  ["#3b82f6", "#2563eb"],
+  ["#84cc16", "#16a34a"],
+];
+
+function ProjectLogo({ name }) {
+  const initials = name
+    ? name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("")
+    : "P";
+  const colorIndex =
+    name
+      ? name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) %
+        PROJECT_GRADIENTS.length
+      : 0;
+  const [from, to] = PROJECT_GRADIENTS[colorIndex];
+  return (
+    <div
+      style={{
+        width: "38px",
+        height: "38px",
+        borderRadius: "10px",
+        background: `linear-gradient(135deg, ${from}, ${to})`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+        fontWeight: "800",
+        fontSize: "13px",
+        letterSpacing: "0.5px",
+        flexShrink: 0,
+        boxShadow: `0 3px 8px ${from}55`,
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+
 function Projects() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -52,6 +100,11 @@ function Projects() {
   };
 
   const handleSave = async (project) => {
+    if (project.startDate && project.endDate && project.endDate < project.startDate) {
+      toast.error("Target End Date cannot be before Start Date.");
+      return;
+    }
+
     try {
       if (selectedProject) {
         await updateProject(selectedProject.id, project);
@@ -255,7 +308,12 @@ function Projects() {
                 currentProjects.map((p) => (
                   <tr key={p.id}>
                     <td>{p.id}</td>
-                    <td><strong>{p.projectName}</strong></td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <ProjectLogo name={p.projectName} />
+                        <strong style={{ color: "#1e293b" }}>{p.projectName}</strong>
+                      </div>
+                    </td>
                     <td>
                       {p.leader ? (
                         <span style={{ background: "#e0e7ff", color: "#3730a3", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600" }}>

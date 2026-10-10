@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBell, FaCheckDouble, FaProjectDiagram, FaTasks, FaClock, FaInfoCircle, FaExclamationTriangle, FaExternalLinkAlt } from "react-icons/fa";
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from "../../services/notificationService";
+import { getNotifications, markAsRead, markAllAsRead } from "../../services/notificationService";
 
 function NotificationBell() {
-  const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -13,22 +12,25 @@ function NotificationBell() {
 
   const role = (localStorage.getItem("role") || "").toLowerCase();
 
+  // Always derived — single source of truth
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   const getNotificationsPath = () => {
     if (role.includes("leader")) return "/leader/notifications";
     if (role.includes("employee")) return "/employee/notifications";
     return "/admin/notifications";
   };
 
-  const fetchUnreadCount = async () => {
+  const fetchNotifications = async () => {
     try {
-      const count = await getUnreadCount();
-      setUnreadCount(count);
+      const data = await getNotifications();
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to fetch unread notification count", err);
+      console.error("Failed to fetch notifications", err);
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotificationsWithLoader = async () => {
     setLoading(true);
     try {
       const data = await getNotifications();
@@ -40,18 +42,17 @@ function NotificationBell() {
     }
   };
 
+  // Poll every 10s for new notifications (badge count)
   useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-    }, 10000); // 10s live poll
-
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // When dropdown opens, reload with loader spinner
   useEffect(() => {
     if (isOpen) {
-      fetchNotifications();
+      fetchNotificationsWithLoader();
     }
   }, [isOpen]);
 
@@ -70,10 +71,10 @@ function NotificationBell() {
     e.stopPropagation();
     try {
       await markAsRead(id);
+      // Update local state — unreadCount auto-recalculates
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true, read: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error("Failed to mark notification read", err);
     }
@@ -82,10 +83,10 @@ function NotificationBell() {
   const handleMarkAllRead = async () => {
     try {
       await markAllAsRead();
+      // Update local state — unreadCount auto-recalculates
       setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true, read: true }))
+        prev.map((n) => ({ ...n, read: true }))
       );
-      setUnreadCount(0);
     } catch (err) {
       console.error("Failed to mark all read", err);
     }
@@ -227,7 +228,7 @@ function NotificationBell() {
               </div>
             ) : notifications.length > 0 ? (
               notifications.slice(0, 7).map((n) => {
-                const isUnread = !n.isRead && !n.read;
+                const isUnread = !n.read;
                 return (
                   <div
                     key={n.id}

@@ -61,13 +61,18 @@ function Dashboard() {
     }
   };
 
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
+
   // Metrics extraction with safety fallbacks
-  const assignedProjectName = dashboardData?.assignedProjectName || "Unassigned";
-  const assignedProjectStatus = dashboardData?.assignedProjectStatus || "ACTIVE";
-  const assignedProjectStartDate = dashboardData?.assignedProjectStartDate || "N/A";
-  const assignedProjectEndDate = dashboardData?.assignedProjectEndDate || "N/A";
-  const assignedProjectDescription = dashboardData?.assignedProjectDescription || "No description provided.";
-  const assignedProjectPriority = dashboardData?.assignedProjectPriority || "MEDIUM";
+  const assignedProjects = dashboardData?.assignedProjects || [];
+  const currentProject = assignedProjects[selectedProjectIndex] || (assignedProjects.length > 0 ? assignedProjects[0] : null);
+
+  const assignedProjectName = currentProject ? currentProject.projectName : (dashboardData?.assignedProjectName || "Unassigned");
+  const assignedProjectStatus = currentProject ? currentProject.status : (dashboardData?.assignedProjectStatus || "ACTIVE");
+  const assignedProjectStartDate = currentProject ? currentProject.startDate : (dashboardData?.assignedProjectStartDate || "N/A");
+  const assignedProjectEndDate = currentProject ? currentProject.endDate : (dashboardData?.assignedProjectEndDate || "N/A");
+  const assignedProjectDescription = currentProject ? currentProject.description : (dashboardData?.assignedProjectDescription || "No description provided.");
+  const assignedProjectPriority = currentProject ? currentProject.priority : (dashboardData?.assignedProjectPriority || "MEDIUM");
 
   const teamMembersCount = dashboardData?.teamMembersCount || 0;
   const totalTasks = dashboardData?.totalTasks || 0;
@@ -95,24 +100,30 @@ function Dashboard() {
             </div>
             <h1 style={{ margin: 0, fontSize: "26px", fontWeight: "800" }}>Welcome Back, {leaderName} 👋</h1>
             <p style={{ margin: "6px 0 0 0", color: "#c7d2fe", fontSize: "14px" }}>
-              Assigned Project: <strong style={{ color: "#ffffff" }}>{assignedProjectName}</strong>
+              {assignedProjects.length > 1 ? (
+                <>
+                  Assigned Projects ({assignedProjects.length}):{" "}
+                  <strong style={{ color: "#ffffff" }}>
+                    {assignedProjects.map((p) => p.projectName).join(" • ")}
+                  </strong>
+                </>
+              ) : (
+                <>
+                  Assigned Project: <strong style={{ color: "#ffffff" }}>{assignedProjectName}</strong>
+                </>
+              )}
             </p>
           </div>
-
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {/* Notification Bell */}
-            <button
-              onClick={() => setShowNotificationsModal(true)}
-              style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", width: "44px", height: "44px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", fontSize: "18px" }}
-              title="Notifications"
-            >
-              <FaBell />
-              {notifications.length > 0 && (
-                <span style={{ position: "absolute", top: "6px", right: "6px", background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "800", width: "18px", height: "18px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {notifications.length}
-                </span>
-              )}
-            </button>
+            {/* View All Projects Button if multiple */}
+            {assignedProjects.length > 1 && (
+              <button
+                onClick={() => navigate("/leader/my-project")}
+                style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", padding: "10px 16px", borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <FaProjectDiagram /> View All ({assignedProjects.length})
+              </button>
+            )}
 
             {/* Profile Button */}
             <button
@@ -130,15 +141,54 @@ function Dashboard() {
               <FaPlus /> Assign New Task
             </button>
           </div>
+
         </div>
 
         {/* Feature 1: Assigned Project Banner Card */}
+        {assignedProjects.length > 1 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <span style={{ fontSize: "13px", fontWeight: "700", color: "#475569" }}>
+              Active Project View:
+            </span>
+            {assignedProjects.map((p, idx) => (
+              <button
+                key={p.id || idx}
+                onClick={() => setSelectedProjectIndex(idx)}
+                style={{
+                  background: selectedProjectIndex === idx ? "#4f46e5" : "#ffffff",
+                  color: selectedProjectIndex === idx ? "#ffffff" : "#475569",
+                  border: selectedProjectIndex === idx ? "1px solid #4f46e5" : "1px solid #cbd5e1",
+                  padding: "7px 14px",
+                  borderRadius: "8px",
+                  fontWeight: "700",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: selectedProjectIndex === idx ? "0 2px 6px rgba(79,70,229,0.25)" : "none",
+                  transition: "all 0.2s ease"
+                }}
+              >
+                <FaProjectDiagram style={{ fontSize: "11px" }} /> {p.projectName}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div style={{ background: "#ffffff", padding: "24px 28px", borderRadius: "16px", border: "1px solid #e2e8f0", marginBottom: "28px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
             <div>
-              <span style={{ background: "#e0e7ff", color: "#3730a3", padding: "4px 12px", borderRadius: "12px", fontSize: "12px", fontWeight: "700" }}>
-                Assigned Project
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                <span style={{ background: "#e0e7ff", color: "#3730a3", padding: "4px 12px", borderRadius: "12px", fontSize: "12px", fontWeight: "700" }}>
+                  Assigned Project
+                </span>
+                {assignedProjects.length > 1 && (
+                  <span style={{ background: "#f1f5f9", color: "#64748b", padding: "4px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: "600" }}>
+                    Project {selectedProjectIndex + 1} of {assignedProjects.length}
+                  </span>
+                )}
+              </div>
               <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#0f172a", margin: "10px 0 4px 0" }}>
                 {assignedProjectName}
               </h2>

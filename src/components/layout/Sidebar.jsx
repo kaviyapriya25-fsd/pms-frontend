@@ -19,17 +19,11 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-
-    const confirmLogout = window.confirm("Do you want to Logout?");
-
-    if (!confirmLogout) return;
-
     localStorage.clear();
     sessionStorage.clear();
-
     navigate("/", { replace: true });
-
   };
+
 
   return (
 

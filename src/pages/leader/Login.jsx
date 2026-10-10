@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaUserTie } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { loginTeamLeader } from "../../services/teamLeaderAuthService";
-import GoogleAuthModal from "../../components/common/GoogleAuthModal";
+import { triggerGoogleLogin } from "../../services/googleAuthService";
 import "./LeaderLogin.css";
 
 import teamleaderImg from "../../assets/images/teamleader.svg";
@@ -17,7 +17,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -51,7 +50,11 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    setIsGoogleModalOpen(true);
+    triggerGoogleLogin(
+      "TEAM_LEADER",
+      (res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" || res.role === "LEADER" ? "/leader/dashboard" : "/employee/dashboard"),
+      (errMsg) => setError(errMsg)
+    );
   };
 
   return (
@@ -159,12 +162,6 @@ function Login() {
 
       </div>
 
-      <GoogleAuthModal
-        isOpen={isGoogleModalOpen}
-        onClose={() => setIsGoogleModalOpen(false)}
-        role="TEAM_LEADER"
-        onSuccess={(res) => navigate(res.role === "ADMIN" ? "/admin/dashboard" : res.role === "TEAM_LEADER" || res.role === "LEADER" ? "/leader/dashboard" : "/employee/dashboard")}
-      />
     </div>
   );
 }
